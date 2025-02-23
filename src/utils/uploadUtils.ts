@@ -80,25 +80,25 @@ export const uploadToSupabase = async (audioBlob: Blob, onProgress?: (progress: 
 
 export const sendToMakeWebhook = async (audioUrl: string): Promise<boolean> => {
   try {
-    console.log('Enviando URL al webhook:', audioUrl);
+    console.log('Enviando URL al webhook Make:', MAKE_WEBHOOK_URL);
+
+    const formData = new FormData();
+    formData.append('audioUrl', audioUrl);
 
     const response = await fetch(MAKE_WEBHOOK_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ audioUrl }),
+      body: formData
     });
 
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
     }
 
-    console.log('Webhook enviado exitosamente');
+    console.log('Webhook enviado exitosamente a Make');
     return true;
 
   } catch (error) {
-    console.error('Error al enviar webhook:', error);
+    console.error('Error al enviar webhook a Make:', error);
     toast({
       title: "Error",
       description: "Error al procesar el audio en Make",
