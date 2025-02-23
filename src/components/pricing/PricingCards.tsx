@@ -221,7 +221,7 @@ export const PricingCards = () => {
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       conversation.startSession({
-        agentId: "DnScXfRTfQyBlJMBhfKb",
+        agentId: "0gLnzcbTHPrgMkiYcNFr",
       });
     } catch (error) {
       console.error("Error al acceder al micrófono:", error);
