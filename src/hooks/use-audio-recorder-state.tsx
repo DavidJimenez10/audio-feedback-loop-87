@@ -38,7 +38,7 @@ export const useAudioRecorderState = () => {
       console.error('Error starting recording:', error);
       toast({
         title: "Error",
-        description: "Could not start recording. Please check microphone permissions.",
+        description: "No se pudo iniciar la grabación. Por favor verifica los permisos del micrófono.",
         variant: "destructive",
       });
     }
@@ -93,3 +93,4 @@ export const useAudioRecorderState = () => {
     toast,
   };
 };
+
