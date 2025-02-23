@@ -83,7 +83,7 @@ export const sendToMakeWebhook = async (audioUrl: string): Promise<boolean> => {
     console.log('Enviando URL al webhook Make:', MAKE_WEBHOOK_URL);
 
     const formData = new FormData();
-    formData.append('audioUrl', audioUrl);
+    formData.append('audiourl', audioUrl); // Cambiado a 'audiourl' para coincidir con el parámetro esperado
 
     const response = await fetch(MAKE_WEBHOOK_URL, {
       method: 'POST',
@@ -94,7 +94,7 @@ export const sendToMakeWebhook = async (audioUrl: string): Promise<boolean> => {
       throw new Error(`Error HTTP: ${response.status}`);
     }
 
-    console.log('Webhook enviado exitosamente a Make');
+    console.log('Webhook enviado exitosamente a Make con audioUrl:', audioUrl);
     return true;
 
   } catch (error) {
