@@ -21,16 +21,16 @@ export const uploadToSupabase = async (audioBlob: Blob, onProgress?: (progress: 
 
     console.log('Preparando subida con nombre de archivo:', fileName);
 
-    // Upload file to Supabase - corrected method signature
+    // Upload file to Supabase using the correct onProgress property
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(fileName, audioBlob, {
         cacheControl: '3600',
         upsert: false,
         contentType: audioBlob.type,
-        onUploadProgress: ({ percent }) => {
+        onProgress: (progress) => {
           if (onProgress) {
-            onProgress(Math.round(percent));
+            onProgress(Math.round(progress.percent));
           }
         }
       });
@@ -95,3 +95,4 @@ export const sendToMakeWebhook = async (audioUrl: string): Promise<boolean> => {
     return false;
   }
 };
+
