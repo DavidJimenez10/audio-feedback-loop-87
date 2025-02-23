@@ -1,8 +1,9 @@
 
 import { supabase } from "../integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { MAKE_WEBHOOK_URL } from "./constants";
 
-export const uploadToSupabase = async (audioBlob: Blob): Promise<string | null> => {
+export const uploadToSupabase = async (audioBlob: Blob, onProgress?: (progress: number) => void): Promise<string | null> => {
   const BUCKET_NAME = "audio_chunks";
   
   try {
@@ -26,7 +27,10 @@ export const uploadToSupabase = async (audioBlob: Blob): Promise<string | null> 
       .upload(fileName, audioBlob, {
         cacheControl: '3600',
         upsert: false,
-        contentType: audioBlob.type
+        contentType: audioBlob.type,
+        onUploadProgress: ({ percent }) => {
+          onProgress?.(Math.round(percent));
+        }
       });
 
     if (uploadError) {
@@ -61,8 +65,6 @@ export const uploadToSupabase = async (audioBlob: Blob): Promise<string | null> 
 };
 
 export const sendToMakeWebhook = async (audioUrl: string): Promise<boolean> => {
-  const MAKE_WEBHOOK_URL = 'https://hook.us2.make.com/fdfea2uux2sa7todteplybdudo45qpwm';
-
   try {
     console.log('Enviando URL al webhook:', audioUrl);
 
@@ -91,4 +93,3 @@ export const sendToMakeWebhook = async (audioUrl: string): Promise<boolean> => {
     return false;
   }
 };
-

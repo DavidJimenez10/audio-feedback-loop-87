@@ -1,2 +1,2 @@
 
-export const MAKE_WEBHOOK_URL = 'https://hook.us2.make.com/d3kepgsztrxekbdjiwrq8zn05l5zo5bs';
+export const MAKE_WEBHOOK_URL = 'https://hook.us2.make.com/fdfea2uux2sa7todteplybdudo45qpwm';
