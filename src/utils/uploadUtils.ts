@@ -28,8 +28,12 @@ export const uploadToSupabase = async (audioBlob: Blob, onProgress?: (progress: 
         cacheControl: '3600',
         upsert: false,
         contentType: audioBlob.type,
-        onUploadProgress: ({ percent }) => {
-          onProgress?.(Math.round(percent));
+      }, {
+        onProgress: ({ totalBytes, loadedBytes }) => {
+          if (onProgress) {
+            const percent = (loadedBytes / totalBytes) * 100;
+            onProgress(Math.round(percent));
+          }
         }
       });
 
