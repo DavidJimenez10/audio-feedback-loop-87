@@ -13,6 +13,7 @@ import { RecordButton } from "../audio/RecordButton";
 import { ProcessingCountdown } from "../audio/ProcessingCountdown";
 import { plans, PLAN_HANDLERS } from "@/config/planConfig";
 import { PricingCard } from "./PricingCard";
+import { ELEVEN_LABS_API_KEY } from "@/config/elevenLabsConfig";
 
 export const PricingCards = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
@@ -43,6 +44,7 @@ export const PricingCards = () => {
   ];
 
   const conversation = useConversation({
+    apiKey: ELEVEN_LABS_API_KEY,
     onMessage: (message) => {
       console.log("Mensaje recibido:", message);
       if (message.source === "ai") {
@@ -221,7 +223,7 @@ export const PricingCards = () => {
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       conversation.startSession({
-        agentId: "0gLnzcbTHPrgMkiYcNFr", // Actualizado al nuevo ID del agente
+        agentId: "0gLnzcbTHPrgMkiYcNFr",
       });
     } catch (error) {
       console.error("Error al acceder al micrófono:", error);
