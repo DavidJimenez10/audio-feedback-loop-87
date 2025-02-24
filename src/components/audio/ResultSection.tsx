@@ -9,15 +9,13 @@ interface ResultSectionProps {
   evaluationHtml: string | null;
   analysisResult: string | null;
   onDownload: () => void;
-  onCloseEvaluation: () => void;
 }
 
 export const ResultSection = ({
   feedback,
   evaluationHtml,
   analysisResult,
-  onDownload,
-  onCloseEvaluation
+  onDownload
 }: ResultSectionProps) => {
   return (
     <>
@@ -32,11 +30,7 @@ export const ResultSection = ({
       )}
 
       {evaluationHtml && (
-        <EvaluationDisplay 
-          htmlContent={evaluationHtml}
-          isOpen={!!evaluationHtml}
-          onClose={onCloseEvaluation}
-        />
+        <EvaluationDisplay htmlContent={evaluationHtml} />
       )}
 
       {analysisResult && !evaluationHtml && (
@@ -50,4 +44,3 @@ export const ResultSection = ({
     </>
   );
 };
-
