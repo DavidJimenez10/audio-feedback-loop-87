@@ -10,4 +10,3 @@ export interface SalesAnalysis {
   brandValues?: boolean;
   closingTechnique?: string;
 }
-
