@@ -97,9 +97,18 @@ export const sendToMakeWebhook = async (audioUrl: string, isRecording: boolean =
       throw new Error(`Error HTTP: ${response.status}`);
     }
 
-    // Obtener y mostrar la respuesta del webhook
-    const responseData = await response.json();
-    console.log('Respuesta del webhook:', responseData);
+    // Obtener el texto de la respuesta
+    const responseText = await response.text();
+    console.log('Respuesta del webhook (texto):', responseText);
+
+    // Si la respuesta es un JSON válido, intentar parsearlo
+    try {
+      const responseData = JSON.parse(responseText);
+      console.log('Respuesta del webhook (JSON):', responseData);
+    } catch (e) {
+      // Si no es JSON válido, no hay problema, continuamos
+      console.log('La respuesta no es JSON válido, pero esto es aceptable');
+    }
 
     console.log('Webhook enviado exitosamente');
     return true;
@@ -114,4 +123,3 @@ export const sendToMakeWebhook = async (audioUrl: string, isRecording: boolean =
     return false;
   }
 };
-
