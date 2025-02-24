@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { uploadToSupabase, sendToMakeWebhook } from "../../../utils/uploadUtils";
 import { useSalesAnalysis } from "../../../hooks/use-sales-analysis";
-import { startProgressAndTime, stopProgressAndTime, startProcessingCountdown } from "../../../utils/progressUtils";
 import { useToast } from "@/hooks/use-toast";
 
 export const useAudioUpload = () => {
@@ -18,51 +17,45 @@ export const useAudioUpload = () => {
       setFeedback({
         type: "neutral",
         message: "Subiendo archivo... 📤",
+        stage: 1
       });
-      
+
       const audioBlob = new Blob([file], { type: file.type });
-      const publicUrl = await uploadToSupabase(audioBlob, (progress) => {
-        setProgressValue(progress);
-      });
-      
+      const publicUrl = await uploadToSupabase(audioBlob);
+
       if (!publicUrl) {
         throw new Error('Error al obtener la URL pública');
       }
 
       setFeedback({
         type: "positive",
-        message: "Archivo subido exitosamente, procesando... ⚙️",
+        message: "¡Archivo subido! ⚙️",
+        stage: 2
       });
 
       const webhookSuccess = await sendToMakeWebhook(publicUrl);
       
       if (!webhookSuccess) {
-        throw new Error('Error al procesar en Make');
+        throw new Error('Error al procesar');
       }
-      
-      startProcessingCountdown(
-        setIsProcessing,
-        setProcessingTimeLeft,
-        { current: null },
-        setAnalysisResult,
-        toast
-      );
 
       setFeedback({
         type: "positive",
-        message: "¡Archivo procesado correctamente! 🎉",
+        message: "¡Procesado! 🎉",
+        stage: 3
       });
 
     } catch (error) {
-      console.error("Error en el proceso de subida:", error);
+      console.error("Error:", error);
       setProgressValue(0);
       setFeedback({
         type: "negative",
-        message: "Error en el proceso ❌",
+        message: "Error ❌",
+        stage: 1
       });
       toast({
         title: "Error",
-        description: "Error al procesar el archivo ❌",
+        description: "Error al procesar el audio",
         variant: "destructive",
       });
     }
