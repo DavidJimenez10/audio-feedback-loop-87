@@ -1,4 +1,3 @@
-
 import { Card } from "./ui/card";
 import { Tabs } from "./ui/tabs";
 import { useSalesAnalysis } from "../hooks/use-sales-analysis";
@@ -19,6 +18,10 @@ export const AudioFeedback = () => {
     toast
   } = useAudioRecorderState();
   const [evaluationHtml, setEvaluationHtml] = useState<string | null>(null);
+
+  const handleCloseEvaluation = () => {
+    setEvaluationHtml(null);
+  };
 
   const cancelProcessing = () => {
     if (refs.processingInterval.current) clearInterval(refs.processingInterval.current);
@@ -251,6 +254,7 @@ export const AudioFeedback = () => {
         evaluationHtml={evaluationHtml}
         analysisResult={state.analysisResult}
         onDownload={handleDownloadPDF}
+        onCloseEvaluation={handleCloseEvaluation}
       />
     </Card>
   );
