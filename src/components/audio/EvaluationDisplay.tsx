@@ -12,22 +12,30 @@ export const EvaluationDisplay = ({ htmlContent }: EvaluationDisplayProps) => {
     if (iframeRef.current) {
       const iframe = iframeRef.current;
       
-      // Esperar a que el iframe esté listo
-      iframe.onload = () => {
-        // Acceder al documento del iframe y escribir el contenido
+      // Asegurar que el contenido se escriba cuando el iframe esté listo
+      const writeContent = () => {
         if (iframe.contentDocument) {
+          // Limpiar el contenido anterior
           iframe.contentDocument.open();
+          // Escribir el nuevo contenido HTML
           iframe.contentDocument.write(htmlContent);
+          // Cerrar el documento para finalizar la escritura
           iframe.contentDocument.close();
+
+          // Asegurarnos de que los estilos se apliquen correctamente
+          const iframeBody = iframe.contentDocument.body;
+          if (iframeBody) {
+            iframeBody.style.margin = '0';
+            iframeBody.style.padding = '0';
+          }
         }
       };
-      
-      // Trigger inicial
-      if (iframe.contentDocument) {
-        iframe.contentDocument.open();
-        iframe.contentDocument.write(htmlContent);
-        iframe.contentDocument.close();
-      }
+
+      // Intentar escribir el contenido inmediatamente
+      writeContent();
+
+      // También intentar escribir cuando el iframe se cargue
+      iframe.onload = writeContent;
     }
   }, [htmlContent]);
 
