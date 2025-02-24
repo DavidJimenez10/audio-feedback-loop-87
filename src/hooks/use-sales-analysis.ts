@@ -2,23 +2,17 @@
 import { useState } from "react";
 import { SalesAnalysis, SalesStage } from "../types/sales";
 
-interface FeedbackState {
-  type: "positive" | "neutral" | "negative";
-  message: string;
-  stage?: SalesStage;
-  analysis?: Partial<SalesAnalysis>;
-}
-
 export const useSalesAnalysis = () => {
-  const [feedback, setFeedback] = useState<FeedbackState>({
+  const [feedback, setFeedback] = useState<SalesAnalysis>({
     type: "neutral",
     message: "Listo 👋",
+    stage: 1
   });
 
   const analyzeSalesStage = (analysis: Partial<SalesAnalysis>) => {
     if (!analysis.stage) return;
 
-    let feedbackType: FeedbackState["type"] = "neutral";
+    let feedbackType: SalesAnalysis["type"] = "neutral";
     let message = "";
 
     switch (analysis.stage) {
@@ -64,44 +58,45 @@ export const useSalesAnalysis = () => {
       type: feedbackType,
       message,
       stage: analysis.stage as SalesStage,
-      analysis
+      ...analysis
     });
   };
 
   const analyzeFeedback = (content: string) => {
     const lowerContent = content.toLowerCase();
-    let feedbackState: FeedbackState = {
+    let newFeedback: SalesAnalysis = {
       type: "neutral",
-      message: "Escuchando... 👂"
+      message: "Escuchando... 👂",
+      stage: 1
     };
 
     if (lowerContent.includes("match exitoso") || lowerContent.includes("buena conexión")) {
-      feedbackState = {
+      newFeedback = {
         type: "positive",
         message: "Match! 🤝",
-        stage: 1 as SalesStage
+        stage: 1
       };
     } else if (lowerContent.includes("necesidad identificada")) {
-      feedbackState = {
+      newFeedback = {
         type: "positive",
         message: "Necesidad ✅",
-        stage: 2 as SalesStage
+        stage: 2
       };
     } else if (lowerContent.includes("propuesta")) {
-      feedbackState = {
+      newFeedback = {
         type: "neutral",
         message: "Propuesta 💡",
-        stage: 3 as SalesStage
+        stage: 3
       };
     } else if (lowerContent.includes("cierre")) {
-      feedbackState = {
+      newFeedback = {
         type: "positive",
         message: "¡Cierra! 🎯",
-        stage: 4 as SalesStage
+        stage: 4
       };
     }
 
-    setFeedback(feedbackState);
+    setFeedback(newFeedback);
   };
 
   return {

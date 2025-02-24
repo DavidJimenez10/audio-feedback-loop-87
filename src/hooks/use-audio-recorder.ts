@@ -71,6 +71,7 @@ export const useAudioRecorder = () => {
       setFeedback({
         type: "neutral",
         message: "Grabando... 🎤",
+        stage: 1
       });
     } catch (error) {
       console.error("Error al acceder al micrófono:", error);
