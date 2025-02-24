@@ -1,9 +1,9 @@
 
 import { supabase } from "../integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { MAKE_WEBHOOK_URL } from "./constants";
+import { MAKE_WEBHOOK_URL, MAKE_RECORDING_WEBHOOK_URL } from "./constants";
 
-export const uploadToSupabase = async (audioBlob: Blob, onProgress?: (progress: number) => void): Promise<string | null> => {
+export const uploadToSupabase = async (audioBlob: Blob): Promise<string | null> => {
   const BUCKET_NAME = "audio_chunks";
   
   try {
@@ -13,39 +13,22 @@ export const uploadToSupabase = async (audioBlob: Blob, onProgress?: (progress: 
       blobTamaño: audioBlob.size
     });
 
-    // Generate unique filename
+    // Generate unique filename with correct extension based on MIME type
     const timestamp = new Date().getTime();
     const randomString = Math.random().toString(36).substring(7);
-    const fileExtension = audioBlob.type.includes('mp3') ? 'mp3' : 'webm';
+    const fileExtension = getFileExtension(audioBlob.type);
     const fileName = `audio-${timestamp}-${randomString}.${fileExtension}`;
 
     console.log('Preparando subida con nombre de archivo:', fileName);
 
     // Upload file to Supabase
-    const options = {
-      cacheControl: '3600',
-      upsert: false,
-      contentType: audioBlob.type
-    };
-
-    // Create upload controller
-    let uploadController = new AbortController();
-
-    // Set up progress monitoring
-    if (onProgress) {
-      const xhr = new XMLHttpRequest();
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = (event.loaded / event.total) * 100;
-          onProgress(Math.round(percentComplete));
-        }
-      };
-    }
-
-    // Perform the upload
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(BUCKET_NAME)
-      .upload(fileName, audioBlob, options);
+      .upload(fileName, audioBlob, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: audioBlob.type
+      });
 
     if (uploadError) {
       console.error('Error al subir a Supabase:', uploadError);
@@ -78,27 +61,51 @@ export const uploadToSupabase = async (audioBlob: Blob, onProgress?: (progress: 
   }
 };
 
-export const sendToMakeWebhook = async (audioUrl: string): Promise<boolean> => {
+// Función auxiliar para determinar la extensión del archivo
+const getFileExtension = (mimeType: string): string => {
+  const mimeToExt: { [key: string]: string } = {
+    'audio/mpeg': 'mp3',
+    'audio/mp3': 'mp3',
+    'audio/wav': 'wav',
+    'audio/wave': 'wav',
+    'audio/ogg': 'ogg',
+    'audio/aac': 'aac',
+    'audio/m4a': 'm4a',
+    'audio/webm': 'webm'
+  };
+
+  return mimeToExt[mimeType] || 'mp3'; // Por defecto mp3 si no se reconoce el tipo
+};
+
+export const sendToMakeWebhook = async (audioUrl: string, isRecording: boolean = false): Promise<boolean> => {
   try {
-    console.log('Enviando URL al webhook Make:', MAKE_WEBHOOK_URL);
+    const webhookUrl = isRecording ? MAKE_RECORDING_WEBHOOK_URL : MAKE_WEBHOOK_URL;
+    console.log(`Enviando URL al webhook (${isRecording ? 'grabación' : 'archivo'}):`, audioUrl);
 
-    const formData = new FormData();
-    formData.append('audiourl', audioUrl); // Cambiado a 'audiourl' para coincidir con el parámetro esperado
-
-    const response = await fetch(MAKE_WEBHOOK_URL, {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
-      body: formData
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        audioUrl,
+        source: isRecording ? 'recording' : 'upload'
+      }),
     });
 
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
     }
 
-    console.log('Webhook enviado exitosamente a Make con audioUrl:', audioUrl);
+    // Obtener y mostrar la respuesta del webhook
+    const responseData = await response.json();
+    console.log('Respuesta del webhook:', responseData);
+
+    console.log('Webhook enviado exitosamente');
     return true;
 
   } catch (error) {
-    console.error('Error al enviar webhook a Make:', error);
+    console.error('Error al enviar webhook:', error);
     toast({
       title: "Error",
       description: "Error al procesar el audio en Make",

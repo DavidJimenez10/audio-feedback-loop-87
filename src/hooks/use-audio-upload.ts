@@ -1,9 +1,8 @@
 
 import { useState } from "react";
 import { uploadToSupabase, sendToMakeWebhook } from "../utils/uploadUtils";
-import { useSalesAnalysis } from "../hooks/use-sales-analysis";
-import { startProgressAndTime, stopProgressAndTime, startProcessingCountdown } from "../utils/progressUtils";
-import { useToast } from "@/hooks/use-toast";
+import { useSalesAnalysis } from "./use-sales-analysis";
+import { useToast } from "./use-toast";
 
 export const useAudioUpload = () => {
   const { setFeedback } = useSalesAnalysis();
@@ -24,29 +23,23 @@ export const useAudioUpload = () => {
       setFeedback({
         type: "neutral",
         message: "Subiendo archivo de audio... 📤",
+        stage: 1
       });
 
       // Crear un Blob del archivo de audio
       const audioBlob = new Blob([file], { type: file.type });
       
       // Subir a Supabase y obtener la URL pública
-      const publicUrl = await uploadToSupabase(audioBlob, (progress) => {
-        setProgressValue(progress);
-        setFeedback({
-          type: "neutral",
-          message: `Subiendo audio... ${progress}% 📤`,
-        });
-      });
+      const publicUrl = await uploadToSupabase(audioBlob);
 
       if (!publicUrl) {
         throw new Error('Error al obtener la URL pública de Supabase');
       }
 
-      console.log('URL pública generada:', publicUrl);
-
       setFeedback({
-        type: "positive",
+        type: "neutral",
         message: "Audio subido exitosamente, procesando... ⚙️",
+        stage: 2
       });
 
       // Enviar la URL al webhook de Make
@@ -56,18 +49,10 @@ export const useAudioUpload = () => {
         throw new Error('Error al procesar en Make');
       }
 
-      // Iniciar el contador de procesamiento
-      startProcessingCountdown(
-        setIsProcessing,
-        setProcessingTimeLeft,
-        { current: null },
-        setAnalysisResult,
-        toast
-      );
-
       setFeedback({
         type: "positive",
         message: "¡Audio procesado correctamente! 🎉",
+        stage: 3
       });
 
       toast({
@@ -81,6 +66,7 @@ export const useAudioUpload = () => {
       setFeedback({
         type: "negative",
         message: "Error en el proceso ❌",
+        stage: 1
       });
       toast({
         title: "Error",
@@ -101,4 +87,3 @@ export const useAudioUpload = () => {
     handleFileUpload,
   };
 };
-
