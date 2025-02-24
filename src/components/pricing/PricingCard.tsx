@@ -56,29 +56,57 @@ export const PricingCard = ({
     },
   });
 
-  const handleClick = async () => {
+  const handleConversationStart = async () => {
     try {
-      // Primero, intentar obtener permiso del micrófono
-      console.log("Solicitando permiso del micrófono...");
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: true,
-        video: false
-      });
-
-      // Si llegamos aquí, tenemos permiso del micrófono
-      console.log("Permiso del micrófono concedido");
-
+      // Solicitar acceso al micrófono
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      
       // Iniciar la sesión con ElevenLabs
-      console.log("Iniciando sesión con ElevenLabs...");
       const sessionData = await conversation.startSession({
         agentId: "0gLnzcbTHPrgMkiYcNFr" // ID del agente de ElevenLabs
       });
+      
+      console.log("Sesión iniciada:", sessionData);
+      
+      return sessionData;
+    } catch (error) {
+      console.error("Error al iniciar la conversación:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo acceder al micrófono",
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
 
+  const handleWebhookResponse = async (response: Response) => {
+    try {
+      // Intentar obtener el texto de la respuesta
+      const responseText = await response.text();
+      console.log('Respuesta del webhook (texto):', responseText);
+      
+      // Mostrar el HTML en el modal
+      setEvaluationHtml(responseText);
+      setShowEvaluation(true);
+      
+    } catch (error) {
+      console.error('Error al procesar la respuesta:', error);
+      toast({
+        title: "Error",
+        description: "Error al procesar la respuesta del servidor",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleClick = async () => {
+    try {
+      const sessionData = await handleConversationStart();
+      
       if (!sessionData) {
-        throw new Error('No se pudo iniciar la sesión con ElevenLabs');
+        throw new Error('No se pudo iniciar la sesión');
       }
-
-      console.log("Sesión iniciada correctamente:", sessionData);
 
       // Enviar al webhook
       const webhookResponse = await sendToMakeWebhook(sessionData, true);
@@ -86,12 +114,9 @@ export const PricingCard = ({
       if (!webhookResponse) {
         throw new Error('Error al enviar al webhook');
       }
-
+      
       // Llamar al callback proporcionado
       onSelect(planType);
-
-      // Detener el stream del micrófono si ya no se necesita
-      stream.getTracks().forEach(track => track.stop());
 
       toast({
         title: "¡Éxito!",
@@ -99,20 +124,12 @@ export const PricingCard = ({
       });
 
     } catch (error) {
-      console.error('Error detallado:', error);
+      console.error('Error en el proceso:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Error al iniciar la conversación",
+        description: error instanceof Error ? error.message : "Error inesperado",
         variant: "destructive",
       });
-
-      // Asegurarse de que el stream se detenga en caso de error
-      try {
-        const tracks = await navigator.mediaDevices.getUserMedia({ audio: true });
-        tracks.getTracks().forEach(track => track.stop());
-      } catch (e) {
-        console.error('Error al limpiar el stream:', e);
-      }
     }
   };
 
@@ -170,3 +187,4 @@ export const PricingCard = ({
     </>
   );
 };
+
