@@ -9,9 +9,25 @@ export const EvaluationDisplay = ({ htmlContent }: EvaluationDisplayProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    if (iframeRef.current && htmlContent) {
+    if (iframeRef.current) {
       const iframe = iframeRef.current;
-      iframe.srcdoc = htmlContent;
+      
+      // Esperar a que el iframe esté listo
+      iframe.onload = () => {
+        // Acceder al documento del iframe y escribir el contenido
+        if (iframe.contentDocument) {
+          iframe.contentDocument.open();
+          iframe.contentDocument.write(htmlContent);
+          iframe.contentDocument.close();
+        }
+      };
+      
+      // Trigger inicial
+      if (iframe.contentDocument) {
+        iframe.contentDocument.open();
+        iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument.close();
+      }
     }
   }, [htmlContent]);
 
@@ -19,11 +35,10 @@ export const EvaluationDisplay = ({ htmlContent }: EvaluationDisplayProps) => {
     <div className="w-full mt-6">
       <iframe
         ref={iframeRef}
-        className="w-full min-h-[600px] border rounded-lg bg-white"
+        className="w-full min-h-[800px] border rounded-lg bg-white"
         title="Evaluación de llamada"
         sandbox="allow-same-origin allow-scripts"
       />
     </div>
   );
 };
-
