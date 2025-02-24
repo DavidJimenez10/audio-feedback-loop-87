@@ -97,6 +97,10 @@ export const sendToMakeWebhook = async (audioUrl: string, isRecording: boolean =
       throw new Error(`Error HTTP: ${response.status}`);
     }
 
+    // Obtener y mostrar la respuesta del webhook
+    const responseData = await response.json();
+    console.log('Respuesta del webhook:', responseData);
+
     console.log('Webhook enviado exitosamente');
     return true;
 
