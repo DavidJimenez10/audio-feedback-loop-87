@@ -1,3 +1,4 @@
+
 import { supabase } from "../integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { MAKE_WEBHOOK_URL, MAKE_RECORDING_WEBHOOK_URL } from "./constants";
@@ -76,10 +77,10 @@ const getFileExtension = (mimeType: string): string => {
   return mimeToExt[mimeType] || 'mp3'; // Por defecto mp3 si no se reconoce el tipo
 };
 
-export const sendToMakeWebhook = async (data: any, isRecording: boolean = false): Promise<boolean> => {
+export const sendToMakeWebhook = async (audioUrl: string, isRecording: boolean = false): Promise<boolean> => {
   try {
     const webhookUrl = isRecording ? MAKE_RECORDING_WEBHOOK_URL : MAKE_WEBHOOK_URL;
-    console.log(`Enviando datos al webhook (${isRecording ? 'grabación' : 'archivo'}):`, data);
+    console.log(`Enviando URL al webhook (${isRecording ? 'grabación' : 'archivo'}):`, audioUrl);
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
@@ -87,7 +88,7 @@ export const sendToMakeWebhook = async (data: any, isRecording: boolean = false)
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ 
-        ...(typeof data === 'string' ? { audioUrl: data } : data),
+        audioUrl,
         source: isRecording ? 'recording' : 'upload'
       }),
     });
@@ -116,7 +117,7 @@ export const sendToMakeWebhook = async (data: any, isRecording: boolean = false)
     console.error('Error al enviar webhook:', error);
     toast({
       title: "Error",
-      description: "Error al procesar en Make",
+      description: "Error al procesar el audio en Make",
       variant: "destructive",
     });
     return false;
