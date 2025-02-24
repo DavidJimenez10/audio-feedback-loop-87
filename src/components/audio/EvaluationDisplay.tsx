@@ -26,3 +26,4 @@ export const EvaluationDisplay = ({ htmlContent }: EvaluationDisplayProps) => {
     </div>
   );
 };
+
